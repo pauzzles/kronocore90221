@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import com.kronocore.app.data.AppDatabase
+import com.kronocore.app.data.AppSettings
 import com.kronocore.app.data.Reminder
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -59,7 +60,7 @@ object AlarmScheduler {
     }
 
     fun scheduleAlarm(context: Context, reminder: Reminder) {
-        if (!reminder.isEnabled) {
+        if (!AppSettings.isMasterEnabled(context) || !reminder.isEnabled) {
             cancelAlarm(context, reminder.id)
             return
         }
@@ -132,7 +133,21 @@ object AlarmScheduler {
         }
     }
 
+    suspend fun cancelAllAlarms(context: Context) {
+        val database = AppDatabase.getInstance(context)
+        val allReminders = database.reminderDao().getAllReminders()
+        for (reminder in allReminders) {
+            cancelAlarm(context, reminder.id)
+        }
+        Log.d(TAG, "Canceled all alarms (${allReminders.size})")
+    }
+
     suspend fun rescheduleAll(context: Context) {
+        if (!AppSettings.isMasterEnabled(context)) {
+            cancelAllAlarms(context)
+            return
+        }
+
         val database = AppDatabase.getInstance(context)
         val enabledReminders = database.reminderDao().getEnabledReminders()
         for (reminder in enabledReminders) {

@@ -27,6 +27,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -37,12 +39,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kronocore.app.alarm.NotificationHelper
 import com.kronocore.app.data.Platform
+import com.kronocore.app.ui.theme.AccentGreen
+import com.kronocore.app.ui.theme.AccentRed
 import com.kronocore.app.ui.theme.AccentWhite
 import com.kronocore.app.ui.theme.BackgroundDark
 import com.kronocore.app.ui.theme.BorderMedium
@@ -69,6 +74,7 @@ fun HomeScreen(
     onAddReminderClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val isMasterEnabled by viewModel.isMasterEnabled.collectAsState()
     val nextPost by viewModel.nextPost.collectAsState()
     val upcomingPosts by viewModel.todayUpcomingPosts.collectAsState()
     val completedPosts by viewModel.todayCompletedPosts.collectAsState()
@@ -176,6 +182,63 @@ fun HomeScreen(
                 }
             }
 
+            // Master Reminders Power Switch Card
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (isMasterEnabled) SurfaceCard else Color(0xFF231618),
+                    border = BorderStroke(1.dp, if (isMasterEnabled) BorderSubtle else AccentRed.copy(alpha = 0.45f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .background(
+                                        if (isMasterEnabled) AccentGreen else AccentRed,
+                                        CircleShape
+                                    )
+                            )
+                            Column {
+                                Text(
+                                    text = if (isMasterEnabled) "All Reminders Active" else "All Reminders Turned Off",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (isMasterEnabled) TextPrimary else AccentRed
+                                )
+                                Text(
+                                    text = if (isMasterEnabled) "Alarms will ring on schedule" else "Zero alarms will ring or vibrate",
+                                    fontSize = 11.sp,
+                                    color = TextSecondary
+                                )
+                            }
+                        }
+
+                        Switch(
+                            checked = isMasterEnabled,
+                            onCheckedChange = { viewModel.setMasterEnabled(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = BackgroundDark,
+                                checkedTrackColor = AccentWhite,
+                                uncheckedThumbColor = TextMuted,
+                                uncheckedTrackColor = SurfaceDark
+                            )
+                        )
+                    }
+                }
+            }
+
             item {
                 PermissionCard()
             }
@@ -252,17 +315,31 @@ fun HomeScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Text(
-                                    text = "No upcoming posts scheduled",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = TextSecondary
-                                )
-                                Text(
-                                    text = "Enable reminders or create custom schedules",
-                                    fontSize = 12.sp,
-                                    color = TextMuted
-                                )
+                                if (!isMasterEnabled) {
+                                    Text(
+                                        text = "Reminders are turned off",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = AccentRed
+                                    )
+                                    Text(
+                                        text = "Turn the switch above ON to resume alarms",
+                                        fontSize = 12.sp,
+                                        color = TextSecondary
+                                    )
+                                } else {
+                                    Text(
+                                        text = "No upcoming posts scheduled",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextSecondary
+                                    )
+                                    Text(
+                                        text = "Enable reminders or create custom schedules",
+                                        fontSize = 12.sp,
+                                        color = TextMuted
+                                    )
+                                }
                             }
                         }
                     }

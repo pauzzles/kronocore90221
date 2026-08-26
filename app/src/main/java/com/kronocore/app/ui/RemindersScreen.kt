@@ -41,11 +41,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kronocore.app.data.Platform
 import com.kronocore.app.data.Reminder
+import com.kronocore.app.ui.theme.AccentGreen
 import com.kronocore.app.ui.theme.AccentRed
 import com.kronocore.app.ui.theme.AccentWhite
 import com.kronocore.app.ui.theme.BackgroundDark
@@ -66,6 +68,7 @@ fun RemindersScreen(
 ) {
     val reminders by viewModel.filteredReminders.collectAsState()
     val selectedFilter by viewModel.selectedFilter.collectAsState()
+    val isMasterEnabled by viewModel.isMasterEnabled.collectAsState()
 
     var showResetDialog by remember { mutableStateOf(false) }
 
@@ -161,7 +164,64 @@ fun RemindersScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Master Reminders Power Switch
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                color = if (isMasterEnabled) SurfaceCard else Color(0xFF231618),
+                border = BorderStroke(1.dp, if (isMasterEnabled) BorderSubtle else AccentRed.copy(alpha = 0.45f))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(9.dp)
+                                .background(
+                                    if (isMasterEnabled) AccentGreen else AccentRed,
+                                    CircleShape
+                                )
+                        )
+                        Column {
+                            Text(
+                                text = if (isMasterEnabled) "Master Switch: ON" else "Master Switch: OFF (All Paused)",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (isMasterEnabled) TextPrimary else AccentRed
+                            )
+                            Text(
+                                text = if (isMasterEnabled) "All enabled reminders are active" else "All alarms are temporarily stopped",
+                                fontSize = 11.sp,
+                                color = TextSecondary
+                            )
+                        }
+                    }
+
+                    Switch(
+                        checked = isMasterEnabled,
+                        onCheckedChange = { viewModel.setMasterEnabled(it) },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = BackgroundDark,
+                            checkedTrackColor = AccentWhite,
+                            uncheckedThumbColor = TextMuted,
+                            uncheckedTrackColor = SurfaceDark
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

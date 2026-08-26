@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.kronocore.app.KronoApp
 import com.kronocore.app.alarm.AlarmScheduler
+import com.kronocore.app.data.AppSettings
 import com.kronocore.app.data.Platform
 import com.kronocore.app.data.Reminder
 import com.kronocore.app.data.ReminderRepository
@@ -45,6 +46,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: ReminderRepository =
         (application as? KronoApp)?.repository ?: ReminderRepository(application)
 
+    val isMasterEnabled: StateFlow<Boolean> = repository.isMasterEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppSettings.isMasterEnabled(application))
+
     val allReminders: StateFlow<List<Reminder>> = repository.allReminders
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -63,6 +67,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun setMasterEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            repository.setMasterEnabled(enabled)
+        }
+    }
+
     fun setPlatformFilter(platform: Platform?) {
         _selectedFilter.value = platform
     }
@@ -71,8 +81,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (filter == null) list else list.filter { it.platform == filter }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val nextPost: StateFlow<NextPostInfo?> = combine(allReminders, _currentTime) { reminders, now ->
-        calculateNextPost(reminders.filter { it.isEnabled }, now)
+    val nextPost: StateFlow<NextPostInfo?> = combine(allReminders, _currentTime, isMasterEnabled) { reminders, now, masterEnabled ->
+        if (!masterEnabled) null else calculateNextPost(reminders.filter { it.isEnabled }, now)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val todayUpcomingPosts: StateFlow<List<TodayPostItem>> = combine(allReminders, _currentTime) { reminders, now ->

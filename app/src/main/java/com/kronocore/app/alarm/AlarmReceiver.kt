@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.kronocore.app.data.AppDatabase
+import com.kronocore.app.data.AppSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,6 +16,11 @@ class AlarmReceiver : BroadcastReceiver() {
         val reminderId = intent.getLongExtra(AlarmScheduler.EXTRA_REMINDER_ID, -1L)
         if (reminderId == -1L) return
 
+        if (!AppSettings.isMasterEnabled(context)) {
+            AlarmScheduler.cancelAlarm(context, reminderId)
+            return
+        }
+
         val pendingResult = goAsync()
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -22,7 +28,7 @@ class AlarmReceiver : BroadcastReceiver() {
                 val db = AppDatabase.getInstance(context)
                 val reminder = db.reminderDao().getReminderById(reminderId)
 
-                if (reminder != null && reminder.isEnabled) {
+                if (reminder != null && reminder.isEnabled && AppSettings.isMasterEnabled(context)) {
                     NotificationHelper.showPostingReminder(
                         context = context,
                         notificationId = reminder.id.toInt(),

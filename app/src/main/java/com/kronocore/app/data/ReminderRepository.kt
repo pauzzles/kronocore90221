@@ -47,6 +47,17 @@ class ReminderRepository(
         AlarmScheduler.cancelAlarm(context, reminder.id)
     }
 
+    val isMasterEnabled: Flow<Boolean> = AppSettings.getMasterEnabledFlow(context)
+
+    suspend fun setMasterEnabled(enabled: Boolean) = withContext(Dispatchers.IO) {
+        AppSettings.setMasterEnabled(context, enabled)
+        if (enabled) {
+            AlarmScheduler.rescheduleAll(context)
+        } else {
+            AlarmScheduler.cancelAllAlarms(context)
+        }
+    }
+
     suspend fun resetToDefaultSchedules() = withContext(Dispatchers.IO) {
         val existing = reminderDao.getAllReminders()
         for (r in existing) {

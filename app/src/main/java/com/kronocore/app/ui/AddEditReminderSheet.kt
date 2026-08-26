@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -39,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -94,8 +96,8 @@ fun AddEditReminderSheet(
         dragHandle = {
             Box(
                 modifier = Modifier
-                    .padding(vertical = 12.dp)
-                    .size(width = 36.dp, height = 4.dp)
+                    .padding(vertical = 10.dp)
+                    .size(width = 32.dp, height = 4.dp)
                     .background(BorderMedium, RoundedCornerShape(2.dp))
             )
         }
@@ -104,9 +106,10 @@ fun AddEditReminderSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
-                .padding(bottom = 32.dp)
+                .navigationBarsPadding()
+                .padding(bottom = 20.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(22.dp)
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -114,28 +117,32 @@ fun AddEditReminderSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (reminderToEdit != null) "Edit Reminder" else "New Reminder",
-                    fontSize = 18.sp,
+                    text = if (reminderToEdit != null) "Edit Schedule" else "New Schedule",
+                    fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = TextPrimary
                 )
 
                 if (reminderToEdit != null && onDelete != null) {
-                    IconButton(onClick = {
-                        onDelete(reminderToEdit)
-                        onDismiss()
-                    }) {
+                    IconButton(
+                        onClick = {
+                            onDelete(reminderToEdit)
+                            onDismiss()
+                        },
+                        modifier = Modifier.size(32.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Outlined.Delete,
                             contentDescription = "Delete",
                             tint = AccentRed,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Platform Switcher
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     text = "PLATFORM",
                     fontSize = 11.sp,
@@ -145,14 +152,14 @@ fun AddEditReminderSheet(
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Platform.entries.forEach { platform ->
                         val isSelected = selectedPlatform == platform
                         Surface(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(44.dp)
+                                .height(40.dp)
                                 .clickable { selectedPlatform = platform },
                             shape = RoundedCornerShape(8.dp),
                             color = if (isSelected) SurfaceElevated else SurfaceCard,
@@ -168,7 +175,7 @@ fun AddEditReminderSheet(
                                 Text(
                                     text = platform.displayName,
                                     color = if (isSelected) TextPrimary else TextSecondary,
-                                    fontSize = 14.sp,
+                                    fontSize = 13.sp,
                                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                                 )
                             }
@@ -177,7 +184,8 @@ fun AddEditReminderSheet(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Time Selector
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     text = "POSTING TIME (IST)",
                     fontSize = 11.sp,
@@ -195,7 +203,7 @@ fun AddEditReminderSheet(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(14.dp),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -207,7 +215,7 @@ fun AddEditReminderSheet(
 
                         Text(
                             text = ":",
-                            fontSize = 28.sp,
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary,
                             modifier = Modifier.padding(horizontal = 8.dp)
@@ -224,11 +232,11 @@ fun AddEditReminderSheet(
                         Spacer(modifier = Modifier.width(16.dp))
 
                         Column(
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Surface(
                                 modifier = Modifier
-                                    .size(width = 46.dp, height = 30.dp)
+                                    .size(width = 44.dp, height = 28.dp)
                                     .clickable { isAm = true },
                                 shape = RoundedCornerShape(6.dp),
                                 color = if (isAm) AccentWhite else SurfaceElevated,
@@ -237,16 +245,16 @@ fun AddEditReminderSheet(
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = "AM",
-                                        color = if (isAm) BackgroundDark else TextSecondary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold
+                                        color = if (isAm) Color(0xFF090A0C) else TextSecondary,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
                             }
 
                             Surface(
                                 modifier = Modifier
-                                    .size(width = 46.dp, height = 30.dp)
+                                    .size(width = 44.dp, height = 28.dp)
                                     .clickable { isAm = false },
                                 shape = RoundedCornerShape(6.dp),
                                 color = if (!isAm) AccentWhite else SurfaceElevated,
@@ -255,9 +263,9 @@ fun AddEditReminderSheet(
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = "PM",
-                                        color = if (!isAm) BackgroundDark else TextSecondary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold
+                                        color = if (!isAm) Color(0xFF090A0C) else TextSecondary,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
                             }
@@ -266,7 +274,8 @@ fun AddEditReminderSheet(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Weekdays Selector
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -305,16 +314,17 @@ fun AddEditReminderSheet(
                     }
                 }
 
-                val dayLabels = listOf("M" to 1, "T" to 2, "W" to 3, "T" to 4, "F" to 5, "S" to 6, "S" to 7)
+                val dayLabels = listOf("Mon" to 1, "Tue" to 2, "Wed" to 3, "Thu" to 4, "Fri" to 5, "Sat" to 6, "Sun" to 7)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     dayLabels.forEach { (label, dayValue) ->
                         val isSelected = selectedDays.contains(dayValue)
                         Surface(
                             modifier = Modifier
-                                .size(40.dp)
+                                .weight(1f)
+                                .height(36.dp)
                                 .clickable {
                                     selectedDays = if (isSelected) {
                                         if (selectedDays.size > 1) selectedDays - dayValue else selectedDays
@@ -322,8 +332,8 @@ fun AddEditReminderSheet(
                                         selectedDays + dayValue
                                     }
                                 },
-                            shape = CircleShape,
-                            color = if (isSelected) AccentWhite else SurfaceCard,
+                            shape = RoundedCornerShape(6.dp),
+                            color = if (isSelected) SurfaceElevated else SurfaceDark,
                             border = BorderStroke(
                                 1.dp,
                                 if (isSelected) AccentWhite else BorderSubtle
@@ -332,9 +342,9 @@ fun AddEditReminderSheet(
                             Box(contentAlignment = Alignment.Center) {
                                 Text(
                                     text = label,
-                                    color = if (isSelected) BackgroundDark else TextSecondary,
-                                    fontSize = 13.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                    color = if (isSelected) TextPrimary else TextMuted,
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                                 )
                             }
                         }
@@ -342,7 +352,8 @@ fun AddEditReminderSheet(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Notification Offset
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     text = "NOTIFY BEFORE",
                     fontSize = 11.sp,
@@ -353,8 +364,8 @@ fun AddEditReminderSheet(
 
                 val presetOffsets = listOf(5, 10, 15, 30, 60)
                 FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     presetOffsets.forEach { offset ->
                         val isSelected = notifyMinutesBefore == offset
@@ -373,15 +384,16 @@ fun AddEditReminderSheet(
                                 color = if (isSelected) TextPrimary else TextSecondary,
                                 fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
+            // Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -390,14 +402,14 @@ fun AddEditReminderSheet(
                     onClick = onDismiss,
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp),
+                        .height(44.dp),
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, BorderMedium),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = TextSecondary
                     )
                 ) {
-                    Text(text = "Cancel", fontSize = 14.sp)
+                    Text(text = "Cancel", fontSize = 13.sp, color = TextSecondary)
                 }
 
                 Button(
@@ -418,17 +430,18 @@ fun AddEditReminderSheet(
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp),
+                        .height(44.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = AccentWhite,
-                        contentColor = BackgroundDark
+                        containerColor = Color.White,
+                        contentColor = Color(0xFF090A0C)
                     )
                 ) {
                     Text(
-                        text = if (reminderToEdit != null) "Update" else "Save Reminder",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold
+                        text = if (reminderToEdit != null) "Update Schedule" else "Save Schedule",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF090A0C)
                     )
                 }
             }
@@ -446,30 +459,30 @@ private fun TimeNumberPicker(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Text(
             text = "▲",
-            fontSize = 10.sp,
+            fontSize = 9.sp,
             color = TextSecondary,
             modifier = Modifier
                 .clickable {
                     val next = value + step
                     if (next > range.last) onValueChange(range.first) else onValueChange(next)
                 }
-                .padding(4.dp)
+                .padding(2.dp)
         )
 
         Surface(
             shape = RoundedCornerShape(6.dp),
             color = SurfaceElevated,
             border = BorderStroke(1.dp, BorderSubtle),
-            modifier = Modifier.size(width = 54.dp, height = 46.dp)
+            modifier = Modifier.size(width = 48.dp, height = 40.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Text(
                     text = String.format(Locale.US, format, value),
-                    fontSize = 22.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
@@ -478,14 +491,14 @@ private fun TimeNumberPicker(
 
         Text(
             text = "▼",
-            fontSize = 10.sp,
+            fontSize = 9.sp,
             color = TextSecondary,
             modifier = Modifier
                 .clickable {
                     val prev = value - step
                     if (prev < range.first) onValueChange(range.last) else onValueChange(prev)
                 }
-                .padding(4.dp)
+                .padding(2.dp)
         )
     }
 }

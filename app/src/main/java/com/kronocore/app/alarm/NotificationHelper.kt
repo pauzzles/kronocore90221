@@ -43,6 +43,8 @@ object NotificationHelper {
         postingTimeFormatted: String,
         minutesBefore: Int
     ) {
+        createNotificationChannel(context)
+
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -78,5 +80,15 @@ object NotificationHelper {
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
         notificationManager?.notify(notificationId, builder.build())
+    }
+
+    fun triggerTestNotification(context: Context) {
+        showPostingReminder(
+            context = context,
+            notificationId = 9999,
+            platform = Platform.TIKTOK,
+            postingTimeFormatted = "7:30 PM",
+            minutesBefore = 10
+        )
     }
 }

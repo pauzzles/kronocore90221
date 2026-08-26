@@ -1,5 +1,6 @@
 package com.kronocore.app.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,13 +12,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -33,9 +37,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kronocore.app.alarm.NotificationHelper
 import com.kronocore.app.data.Platform
 import com.kronocore.app.ui.theme.AccentWhite
 import com.kronocore.app.ui.theme.BackgroundDark
@@ -62,6 +68,7 @@ fun HomeScreen(
     onNavigateToReminders: () -> Unit,
     onAddReminderClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val nextPost by viewModel.nextPost.collectAsState()
     val upcomingPosts by viewModel.todayUpcomingPosts.collectAsState()
     val completedPosts by viewModel.todayCompletedPosts.collectAsState()
@@ -73,15 +80,18 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundDark)
+            .statusBarsPadding()
+            .navigationBarsPadding()
     ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(horizontal = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+                // Top Header Bar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -90,43 +100,77 @@ fun HomeScreen(
                     Column {
                         Text(
                             text = "KRONO CORE",
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.2.sp,
                             color = TextMuted
                         )
                         Text(
-                            text = currentTime.format(DateTimeFormatter.ofPattern("EEEE, MMM d · h:mm a", Locale.US)) + " IST",
-                            fontSize = 13.sp,
+                            text = currentTime.format(DateTimeFormatter.ofPattern("EEE, MMM d · h:mm a", Locale.US)) + " IST",
+                            fontSize = 12.sp,
                             color = TextSecondary,
                             modifier = Modifier.padding(top = 2.dp)
                         )
                     }
 
-                    Surface(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onNavigateToReminders() },
-                        color = SurfaceCard,
-                        border = BorderStroke(1.dp, BorderSubtle)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // Test Alert Button
+                        Surface(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    NotificationHelper.triggerTestNotification(context)
+                                    Toast.makeText(context, "Testing alarm (vibrate & ring)...", Toast.LENGTH_SHORT).show()
+                                },
+                            color = SurfaceCard,
+                            border = BorderStroke(1.dp, BorderSubtle)
                         ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Tune,
-                                contentDescription = "Manage Schedules",
-                                tint = TextSecondary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = "Schedules",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = TextPrimary
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.NotificationsActive,
+                                    contentDescription = "Test Notification",
+                                    tint = AccentWhite,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Text(
+                                    text = "Test Alert",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = TextPrimary
+                                )
+                            }
+                        }
+
+                        // Schedules Button
+                        Surface(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onNavigateToReminders() },
+                            color = SurfaceCard,
+                            border = BorderStroke(1.dp, BorderSubtle)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Tune,
+                                    contentDescription = "Manage Schedules",
+                                    tint = TextSecondary,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Text(
+                                    text = "Schedules",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = TextPrimary
+                                )
+                            }
                         }
                     }
                 }
@@ -136,6 +180,7 @@ fun HomeScreen(
                 PermissionCard()
             }
 
+            // NEXT POST HERO CARD
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -157,7 +202,7 @@ fun HomeScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(20.dp)
+                                    .padding(18.dp)
                             ) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -173,28 +218,28 @@ fun HomeScreen(
                                     ) {
                                         Text(
                                             text = next.countdownText,
-                                            fontSize = 13.sp,
+                                            fontSize = 12.sp,
                                             fontWeight = FontWeight.SemiBold,
                                             color = AccentWhite,
-                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                         )
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(12.dp))
 
                                 Text(
                                     text = next.formattedTime,
-                                    fontSize = 40.sp,
+                                    fontSize = 34.sp,
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = (-0.5).sp,
                                     color = TextPrimary
                                 )
 
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
-                                    text = "Notifying ${next.notifyMinutesBefore} min before (${next.postDateTime.minusMinutes(next.notifyMinutesBefore.toLong()).format(DateTimeFormatter.ofPattern("h:mm a", Locale.US))})",
+                                    text = "Alert ${next.notifyMinutesBefore} min before (${next.postDateTime.minusMinutes(next.notifyMinutesBefore.toLong()).format(DateTimeFormatter.ofPattern("h:mm a", Locale.US))})",
                                     fontSize = 12.sp,
                                     color = TextSecondary
                                 )
@@ -203,13 +248,13 @@ fun HomeScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(32.dp),
+                                    .padding(28.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(
                                     text = "No upcoming posts scheduled",
-                                    fontSize = 15.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = TextSecondary
                                 )
@@ -224,8 +269,9 @@ fun HomeScreen(
                 }
             }
 
+            // TODAY SECTION
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = "TODAY",
                         fontSize = 11.sp,
@@ -245,7 +291,7 @@ fun HomeScreen(
                                 text = "All posts for today have passed",
                                 color = TextMuted,
                                 fontSize = 13.sp,
-                                modifier = Modifier.padding(16.dp)
+                                modifier = Modifier.padding(14.dp)
                             )
                         }
                     } else {
@@ -262,7 +308,7 @@ fun HomeScreen(
                                         HorizontalDivider(
                                             color = BorderSubtle,
                                             thickness = 1.dp,
-                                            modifier = Modifier.padding(horizontal = 16.dp)
+                                            modifier = Modifier.padding(horizontal = 14.dp)
                                         )
                                     }
                                 }
@@ -272,9 +318,10 @@ fun HomeScreen(
                 }
             }
 
+            // COMPLETED TODAY SECTION
             if (completedPosts.isNotEmpty()) {
                 item {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -311,7 +358,7 @@ fun HomeScreen(
                                             HorizontalDivider(
                                                 color = BorderSubtle,
                                                 thickness = 1.dp,
-                                                modifier = Modifier.padding(horizontal = 16.dp)
+                                                modifier = Modifier.padding(horizontal = 14.dp)
                                             )
                                         }
                                     }
@@ -323,15 +370,16 @@ fun HomeScreen(
             }
 
             item {
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(70.dp))
             }
         }
 
+        // Floating Action Button to Add Reminder
         FloatingActionButton(
             onClick = onAddReminderClick,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(24.dp),
+                .padding(20.dp),
             containerColor = AccentWhite,
             contentColor = BackgroundDark,
             shape = CircleShape
@@ -353,18 +401,18 @@ fun TodayPostRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             PlatformDot(platform = post.platform, isDimmed = isDimmed)
             Text(
                 text = "${post.platform.displayName} · ${post.formattedTime}",
-                fontSize = 14.sp,
+                fontSize = 13.sp,
                 fontWeight = if (isDimmed) FontWeight.Normal else FontWeight.Medium,
                 color = if (isDimmed) TextMuted else TextPrimary
             )
@@ -373,13 +421,13 @@ fun TodayPostRow(
         if (isDimmed) {
             Text(
                 text = "Passed",
-                fontSize = 12.sp,
+                fontSize = 11.sp,
                 color = TextMuted
             )
         } else {
             Text(
                 text = "-${post.notifyMinutesBefore}m alert",
-                fontSize = 12.sp,
+                fontSize = 11.sp,
                 color = TextSecondary
             )
         }
@@ -400,10 +448,10 @@ fun PlatformBadge(platform: Platform) {
     ) {
         Text(
             text = platform.displayName,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
             color = textColor,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
         )
     }
 }

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">KronoCore</string>
+    <string name="notification_channel_name">Alerts</string>
+    <string name="notification_channel_desc">Timely notifications for upcoming posting schedules</string>
+</resources>

@@ -26,16 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "kronocore.db"
-                )
-                .addCallback(object : Callback() {
-                    override fun onCreate(db: SupportSQLiteDatabase) {
-                        super.onCreate(db)
-                        CoroutineScope(Dispatchers.IO).launch {
-                            getInstance(context).reminderDao().insertAll(DefaultSchedules.getDefaultReminders())
-                        }
-                    }
-                })
-                .build()
+                ).build()
                 INSTANCE = instance
                 instance
             }

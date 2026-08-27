@@ -15,6 +15,22 @@ class ReminderRepository(
     val allReminders: Flow<List<Reminder>> = reminderDao.getAllRemindersFlow()
 
     suspend fun insert(reminder: Reminder): Long = withContext(Dispatchers.IO) {
+        val existing = reminderDao.getAllReminders().find {
+            it.platform == reminder.platform &&
+            it.hour == reminder.hour &&
+            it.minute == reminder.minute &&
+            it.daysOfWeek == reminder.daysOfWeek &&
+            it.notifyMinutesBefore == reminder.notifyMinutesBefore
+        }
+        if (existing != null) {
+            if (!existing.isEnabled && reminder.isEnabled) {
+                val updated = existing.copy(isEnabled = true)
+                reminderDao.update(updated)
+                AlarmScheduler.scheduleAlarm(context, updated)
+            }
+            return@withContext existing.id
+        }
+
         val id = reminderDao.insert(reminder)
         val created = reminder.copy(id = id)
         if (created.isEnabled) {
@@ -70,10 +86,37 @@ class ReminderRepository(
     }
 
     suspend fun ensureDefaultDataLoaded() = withContext(Dispatchers.IO) {
+        deduplicateReminders()
         val count = reminderDao.getCount()
         if (count == 0) {
             val defaults = DefaultSchedules.getDefaultReminders()
             reminderDao.insertAll(defaults)
+            AlarmScheduler.rescheduleAll(context)
+        }
+    }
+
+    private suspend fun deduplicateReminders() {
+        val all = reminderDao.getAllReminders()
+        if (all.isEmpty()) return
+
+        val grouped = all.groupBy {
+            "${it.platform}_${it.hour}_${it.minute}_${it.daysOfWeek.sorted().joinToString(",")}_${it.notifyMinutesBefore}"
+        }
+
+        var hasDuplicates = false
+        for ((_, group) in grouped) {
+            if (group.size > 1) {
+                hasDuplicates = true
+                val toKeep = group.firstOrNull { it.isEnabled } ?: group.first()
+                val toDelete = group.filter { it.id != toKeep.id }
+                for (reminder in toDelete) {
+                    reminderDao.delete(reminder)
+                    AlarmScheduler.cancelAlarm(context, reminder.id)
+                }
+            }
+        }
+
+        if (hasDuplicates) {
             AlarmScheduler.rescheduleAll(context)
         }
     }

@@ -117,9 +117,18 @@ class ReminderRepository(
     private suspend fun syncInstagramSchedule() {
         val all = reminderDao.getAllReminders()
         val instagramReminders = all.filter { it.platform == Platform.INSTAGRAM }
-        val hasOldDaySpecificSchedule = instagramReminders.any { !it.isEveryDay() }
+        val targetTimes = setOf(
+            Pair(1, 30),
+            Pair(3, 30),
+            Pair(7, 30),
+            Pair(19, 30),
+            Pair(21, 30),
+            Pair(23, 30)
+        )
+        val currentTimes = instagramReminders.map { Pair(it.hour, it.minute) }.toSet()
+        val isDifferent = currentTimes != targetTimes || instagramReminders.any { !it.isEveryDay() }
 
-        if (hasOldDaySpecificSchedule) {
+        if (isDifferent) {
             for (reminder in instagramReminders) {
                 reminderDao.delete(reminder)
                 AlarmScheduler.cancelAlarm(context, reminder.id)

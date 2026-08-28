@@ -88,6 +88,7 @@ class ReminderRepository(
     suspend fun ensureDefaultDataLoaded() = withContext(Dispatchers.IO) {
         deduplicateReminders()
         syncTikTokSchedule()
+        syncInstagramSchedule()
         val count = reminderDao.getCount()
         if (count == 0) {
             val defaults = DefaultSchedules.getDefaultReminders()
@@ -109,6 +110,22 @@ class ReminderRepository(
             }
             val newTikTokDefaults = DefaultSchedules.getDefaultReminders().filter { it.platform == Platform.TIKTOK }
             reminderDao.insertAll(newTikTokDefaults)
+            AlarmScheduler.rescheduleAll(context)
+        }
+    }
+
+    private suspend fun syncInstagramSchedule() {
+        val all = reminderDao.getAllReminders()
+        val instagramReminders = all.filter { it.platform == Platform.INSTAGRAM }
+        val hasOldDaySpecificSchedule = instagramReminders.any { !it.isEveryDay() }
+
+        if (hasOldDaySpecificSchedule) {
+            for (reminder in instagramReminders) {
+                reminderDao.delete(reminder)
+                AlarmScheduler.cancelAlarm(context, reminder.id)
+            }
+            val newInstagramDefaults = DefaultSchedules.getDefaultReminders().filter { it.platform == Platform.INSTAGRAM }
+            reminderDao.insertAll(newInstagramDefaults)
             AlarmScheduler.rescheduleAll(context)
         }
     }
